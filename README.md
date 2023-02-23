@@ -6,8 +6,9 @@ This example can be found online [here](https://shuttle-actix.shuttleapp.rs).
 
 ## Api
 
-- "/" -> will return a list of all the notes.
-- "/{whatever}" -> will add a note to the database.
+- "/" -> will return an html.
+- "/todos" -> will return a list of all the notes.
+- "/todos/{whatever}" -> will add a note to the database.
 
 We're using only the `GET` verb even for inserts just for the sake of simplicity.
 
