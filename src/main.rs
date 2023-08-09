@@ -5,7 +5,8 @@ use actix_web::{
     web::{self, Json, ServiceConfig},
 };
 use serde::{Deserialize, Serialize};
-use shuttle_service::{error::CustomError, ShuttleActixWeb};
+use shuttle_actix_web::ShuttleActixWeb;
+use shuttle_runtime::CustomError;
 use sqlx::{Executor, FromRow, PgPool};
 use tracing::instrument;
 
@@ -41,11 +42,11 @@ async fn todos(db: web::Data<PgPool>) -> actix_web::Result<Json<Vec<Todo>>> {
     Ok(Json(todos))
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn actix_web(
     #[shuttle_shared_db::Postgres] pool: PgPool,
-    #[shuttle_static_folder::StaticFolder] static_folder: PathBuf,
-) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Sync + Send + Clone + 'static> {
+    #[shuttle_static_folder::StaticFolder(folder = ".env")] static_folder: PathBuf,
+) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
     pool.execute(include_str!("../db/schema.sql"))
         .await
         .map_err(CustomError::new)?;
@@ -54,11 +55,14 @@ async fn actix_web(
 
     let db = web::Data::new(pool);
 
-    Ok(move |cfg: &mut ServiceConfig| {
+    let config = move |cfg: &mut ServiceConfig| {
+        tracing::info!("Starting server ");
         cfg.app_data(db).service(todos).service(add_todo).service(
             actix_files::Files::new("/", static_folder)
                 .show_files_listing()
                 .index_file("index.html"),
         );
-    })
+    };
+
+    Ok(config.into())
 }

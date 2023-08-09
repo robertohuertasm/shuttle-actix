@@ -2,7 +2,7 @@
 
 This is just a simple repo to test [Shuttle](https://www.shuttle.rs/).
 
-This example can be found online [here](https://shuttle-actix.shuttleapp.rs).
+This example can be found online [here](https://shuttle-actix-2.shuttleapp.rs).
 
 ## Api
 
